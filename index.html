@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>即時投票</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 36px 28px;
+      max-width: 560px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    /* ══════════════════════════════════════
+       歡迎頁面樣式
+    ══════════════════════════════════════ */
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .welcome-logo {
+      width: 180px;
+      height: auto;
+      margin-bottom: 28px;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      animation: fadeIn 1s ease 0.3s both;
+    }
+
+    .welcome-title .highlight {
+      color: #a855f7;
+      display: block;
+      margin-top: 8px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .welcome-subtitle {
+      font-size: 16px;
+      color: #94a3b8;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      animation: fadeIn 1s ease 0.6s both;
+    }
+
+    .welcome-info-box {
+      width: 100%;
+      background: rgba(168,85,247,0.12);
+      border: 1px solid rgba(168,85,247,0.3);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      text-align: left;
+      animation: fadeIn 1s ease 0.9s both;
+    }
+
+    .welcome-info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .welcome-info-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .welcome-info-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .welcome-info-text {
+      flex: 1;
+      font-size: 15px;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .welcome-info-text strong {
+      color: #e879f9;
+      font-weight: 700;
+    }
+
+    .welcome-start-btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #a855f7, #6366f1);
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 24px rgba(168,85,247,0.3);
+      animation: fadeIn 1s ease 1.2s both;
+    }
+
+    .welcome-start-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(168,85,247,0.4);
+    }
+
+    .welcome-start-btn:active {
+      transform: translateY(-1px);
+    }
+
+    /* ══════════════════════════════════════
+       原有樣式
+    ══════════════════════════════════════ */
+    .badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #a855f7, #6366f1);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    h1 span { color: #c084fc; }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      color: #e2e8f0;
+      font-size: 15px;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+    .option:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.3);
+      transform: translateX(4px);
+    }
+
+    .option.selected-A { background: rgba(236,72,153,0.25); border-color: #ec4899; }
+    .option.selected-B { background: rgba(34,211,238,0.25); border-color: #22d3ee; }
+    .option.selected-C { background: rgba(74,222,128,0.25); border-color: #4ade80; }
+    .option.selected-D { background: rgba(251,191,36,0.25); border-color: #fbbf24; }
+
+    .label {
+      min-width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .label-A { background: linear-gradient(135deg, #ec4899, #f43f5e); color: white; }
+    .label-B { background: linear-gradient(135deg, #22d3ee, #3b82f6); color: white; }
+    .label-C { background: linear-gradient(135deg, #4ade80, #10b981); color: white; }
+    .label-D { background: linear-gradient(135deg, #fbbf24, #f97316); color: white; }
+
+    .submit-btn {
+      margin-top: 24px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #a855f7, #6366f1);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 1px;
+    }
+
+    .submit-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .success-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      animation: pop 0.5s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0); }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .success h2 { color: #fff; font-size: 24px; margin-bottom: 8px; }
+    .success p { color: #a5b4fc; font-size: 15px; }
+
+    .answer-badge {
+      margin-top: 20px;
+      padding: 10px 24px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 16px;
+      color: white;
+    }
+
+    .result-box {
+      margin-top: 18px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.7;
+      text-align: left;
+      width: 100%;
+    }
+
+    .result-box.correct {
+      background: rgba(74,222,128,0.15);
+      border: 1px solid #4ade80;
+      color: #bbf7d0;
+    }
+
+    .result-box.wrong {
+      background: rgba(99,102,241,0.15);
+      border: 1px solid #6366f1;
+      color: #c7d2fe;
+    }
+
+    .result-box strong { display: block; margin-bottom: 6px; font-size: 15px; }
+
+    .wait-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .wait-icon {
+      font-size: 72px;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.75; }
+    }
+
+    .wait-screen h2 {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .wait-screen p {
+      color: #a5b4fc;
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 380px;
+    }
+
+    .wait-badge {
+      margin-top: 16px;
+      padding: 10px 28px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+
+    .wait-confirm-btn {
+      margin-top: 28px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #10b981, #06d6a0);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 1px;
+    }
+
+    .wait-confirm-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+
+    /* ── Q5 文字輸入（多個答案） ── */
+    .q5-hint-box {
+      margin-bottom: 20px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .q5-hint-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .q5-hint-text {
+      color: #fde68a;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .q5-hint-text strong {
+      color: #fbbf24;
+      font-weight: 700;
+    }
+
+    .q5-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .q5-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: scale(0.9); }
+    }
+
+    .q5-text-input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0;
+      font-size: 15px;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .q5-text-input::placeholder { color: #64748b; }
+
+    .q5-text-input:focus {
+      border-color: rgba(168,85,247,0.6);
+      background: rgba(255,255,255,0.09);
+      box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
+    }
+
+    .q5-remove-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 2px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .q5-remove-btn:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .q5-add-btn {
+      width: 100%;
+      padding: 14px;
+      border: 2px dashed rgba(168,85,247,0.5);
+      border-radius: 14px;
+      background: rgba(168,85,247,0.08);
+      color: #c084fc;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .q5-add-btn:hover {
+      background: rgba(168,85,247,0.2);
+      border-color: #a855f7;
+      border-style: solid;
+      color: #e9d5ff;
+      transform: translateY(-2px);
+    }
+
+    .q5-add-icon {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    /* Q5 成功畫面 */
+    .q5-success-cloud {
+      margin-top: 16px;
+      padding: 18px 20px;
+      border-radius: 16px;
+      background: rgba(168,85,247,0.12);
+      border: 1px solid rgba(168,85,247,0.3);
+      width: 100%;
+      text-align: center;
+    }
+
+    .q5-submitted-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e879f9;
+      word-break: break-word;
+      line-height: 1.8;
+    }
+
+    .q5-submitted-label {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- ══════════════════════════════════════
+         歡迎頁面
+    ══════════════════════════════════════ -->
+    <div class="welcome-screen" id="welcomeScreen">
+      <img src="https://www.fuhong.org.mo/assets/qt/images/logo.png" alt="扶康會 Logo" class="welcome-logo">
+      
+      <h1 class="welcome-title">
+        歡迎參加
+        <span class="highlight">「自閉譜系成人的心理挑戰與生涯規劃」</span>
+        分享會
+      </h1>
+      
+      <p class="welcome-subtitle">
+        透過互動投票，一起探討神經多樣性與生涯發展
+      </p>
+
+      <div class="welcome-info-box">
+        <div class="welcome-info-row">
+          <div class="welcome-info-icon">📋</div>
+          <div class="welcome-info-text">
+            本次活動共有 <strong>5 道問題</strong>，包含選擇題與開放式問答
+          </div>
+        </div>
+        <div class="welcome-info-row">
+          <div class="welcome-info-icon">⏱️</div>
+          <div class="welcome-info-text">
+            每題作答後會顯示正確答案與解析
+          </div>
+        </div>
+        <div class="welcome-info-row">
+          <div class="welcome-info-icon">🎯</div>
+          <div class="welcome-info-text">
+            請跟隨講者指示進行作答，完成後可查看即時統計結果
+          </div>
+        </div>
+      </div>
+
+      <button class="welcome-start-btn" onclick="startVoting()">
+        🚀 開始投票
+      </button>
+    </div>
+
+    <!-- Q1 Vote Form -->
+    <div id="voteForm-Q1" style="display:none;">
+      <div class="badge">🧠 問題 1 / 5</div>
+      <h1>根據「神經多樣性」<span>(Neurodiversity)</span> 的現代觀點，我們應如何看待自閉症（ASD）？</h1>
+      <div class="options">
+        <button class="option" onclick="selectOpt(1,'A')" id="q1-opt-A">
+          <span class="label label-A">A</span>
+          <span>一種需要透過醫療與手術「修復」的腦部功能損壞。</span>
+        </button>
+        <button class="option" onclick="selectOpt(1,'B')" id="q1-opt-B">
+          <span class="label label-B">B</span>
+          <span>一種因為童年時期缺乏社交訓練而導致的性格缺陷。</span>
+        </button>
+        <button class="option" onclick="selectOpt(1,'C')" id="q1-opt-C">
+          <span class="label label-C">C</span>
+          <span>人類基因與大腦運作的多樣化展現，如同不同系統的電腦（如 Mac vs Windows）。</span>
+        </button>
+        <button class="option" onclick="selectOpt(1,'D')" id="q1-opt-D">
+          <span class="label label-D">D</span>
+          <span>一種暫時性的神經發育延遲，成年後會自動痊癒。</span>
+        </button>
+      </div>
+      <button class="submit-btn" id="submitBtn-Q1" onclick="submitVote(1)" disabled>請先選擇答案</button>
+    </div>
+
+    <!-- Q1 Success Screen -->
+    <div class="success" id="successScreen-Q1">
+      <div class="success-icon" id="successIcon-Q1"></div>
+      <h2 id="successTitle-Q1"></h2>
+      <p id="successSub-Q1"></p>
+      <div class="answer-badge" id="answerBadge-Q1"></div>
+      <div class="result-box" id="resultBox-Q1"></div>
+      <button class="submit-btn" style="margin-top:28px;" onclick="goToWait(1)">繼續下一題 →</button>
+    </div>
+
+    <!-- Wait Screen 1→2 -->
+    <div class="wait-screen" id="waitScreen-1">
+      <div class="wait-icon">⏳</div>
+      <h2>⚠️ 溫馨提示</h2>
+      <p>請先聆聽講者講解第二題的相關內容，<br>準備好後再按下方按鈕作答。</p>
+      <div class="wait-badge">🔔 請留意講者指示</div>
+      <button class="wait-confirm-btn" onclick="goToQ(2)">我明白，進入第二題 ✅</button>
+    </div>
+
+    <!-- Q2 Vote Form -->
+    <div id="voteForm-Q2" style="display:none;">
+      <div class="badge">🔍 問題 2 / 5</div>
+      <h1>成年 <span>ASD</span> 人士最常出現的<span>「共病」</span>心理或神經發展困擾是什麼？</h1>
+      <div class="options">
+        <button class="option" onclick="selectOpt(2,'A')" id="q2-opt-A">
+          <span class="label label-A">A</span>
+          <span>焦慮症 (Anxiety)</span>
+        </button>
+        <button class="option" onclick="selectOpt(2,'B')" id="q2-opt-B">
+          <span class="label label-B">B</span>
+          <span>抑鬱症 (Depression)</span>
+        </button>
+        <button class="option" onclick="selectOpt(2,'C')" id="q2-opt-C">
+          <span class="label label-C">C</span>
+          <span>睡眠困擾 (Sleep disturbance)</span>
+        </button>
+        <button class="option" onclick="selectOpt(2,'D')" id="q2-opt-D">
+          <span class="label label-D">D</span>
+          <span>ADHD（專注力不足/過度活躍症）</span>
+        </button>
+      </div>
+      <button class="submit-btn" id="submitBtn-Q2" onclick="submitVote(2)" disabled>請先選擇答案</button>
+    </div>
+
+    <!-- Q2 Success Screen -->
+    <div class="success" id="successScreen-Q2">
+      <div class="success-icon" id="successIcon-Q2"></div>
+      <h2 id="successTitle-Q2"></h2>
+      <p id="successSub-Q2"></p>
+      <div class="answer-badge" id="answerBadge-Q2"></div>
+      <div class="result-box" id="resultBox-Q2"></div>
+      <button class="submit-btn" style="margin-top:28px;" onclick="goToWait(2)">繼續下一題 →</button>
+    </div>
+
+    <!-- Wait Screen 2→3 -->
+    <div class="wait-screen" id="waitScreen-2">
+      <div class="wait-icon">⏳</div>
+      <h2>⚠️ 溫馨提示</h2>
+      <p>請先聆聽講者講解第三題的相關內容，<br>準備好後再按下方按鈕作答。</p>
+      <div class="wait-badge">🔔 請留意講者指示</div>
+      <button class="wait-confirm-btn" onclick="goToQ(3)">我明白，進入第三題 ✅</button>
+    </div>
+
+    <!-- Q3 Vote Form -->
+    <div id="voteForm-Q3" style="display:none;">
+      <div class="badge">📅 問題 3 / 5</div>
+      <h1>若一個人在 30 歲才被診斷為 <span>ASD</span>，這代表？</h1>
+      <div class="options">
+        <button class="option" onclick="selectOpt(3,'A')" id="q3-opt-A">
+          <span class="label label-A">A</span>
+          <span>他的 ASD 是成年後才「患上」的。</span>
+        </button>
+        <button class="option" onclick="selectOpt(3,'B')" id="q3-opt-B">
+          <span class="label label-B">B</span>
+          <span>症狀從幼兒期就存在，只是當時未被識別或被環境掩蓋。</span>
+        </button>
+        <button class="option" onclick="selectOpt(3,'C')" id="q3-opt-C">
+          <span class="label label-C">C</span>
+          <span>他其實沒有 ASD，只是暫時患有社交恐懼症。</span>
+        </button>
+        <button class="option" onclick="selectOpt(3,'D')" id="q3-opt-D">
+          <span class="label label-D">D</span>
+          <span>這是因為他在成長中經歷過多社交挫折，導致性格在成年後「演變」為自閉症。</span>
+        </button>
+      </div>
+      <button class="submit-btn" id="submitBtn-Q3" onclick="submitVote(3)" disabled>請先選擇答案</button>
+    </div>
+
+    <!-- Q3 Success Screen -->
+    <div class="success" id="successScreen-Q3">
+      <div class="success-icon" id="successIcon-Q3"></div>
+      <h2 id="successTitle-Q3"></h2>
+      <p id="successSub-Q3"></p>
+      <div class="answer-badge" id="answerBadge-Q3"></div>
+      <div class="result-box" id="resultBox-Q3"></div>
+      <button class="submit-btn" style="margin-top:28px;" onclick="goToWait(3)">繼續下一題 →</button>
+    </div>
+
+    <!-- Wait Screen 3→4 -->
+    <div class="wait-screen" id="waitScreen-3">
+      <div class="wait-icon">⏳</div>
+      <h2>⚠️ 溫馨提示</h2>
+      <p>請先聆聽講者講解第四題的相關內容，<br>準備好後再按下方按鈕作答。</p>
+      <div class="wait-badge">🔔 請留意講者指示</div>
+      <button class="wait-confirm-btn" onclick="goToQ(4)">我明白，進入第四題 ✅</button>
+    </div>
+
+    <!-- ✅ Q4 Vote Form（新增：高功能自閉） -->
+    <div id="voteForm-Q4" style="display:none;">
+      <div class="badge">🎯 問題 4 / 5</div>
+      <h1>關於<span>「高功能自閉 (High-Functioning Autism, HFA)」</span>，下列哪一項描述符合其正確的定義或特徵？</h1>
+      <div class="options">
+        <button class="option" onclick="selectOpt(4,'A')" id="q4-opt-A">
+          <span class="label label-A">A</span>
+          <span>代表該人士的認知和社交功能非常出眾，不需要任何支持。</span>
+        </button>
+        <button class="option" onclick="selectOpt(4,'B')" id="q4-opt-B">
+          <span class="label label-B">B</span>
+          <span>臨床定義為智商 (IQ) ≥ 70，即智力在平均或臨界或以上的 ASD 人士。</span>
+        </button>
+        <button class="option" onclick="selectOpt(4,'C')" id="q4-opt-C">
+          <span class="label label-C">C</span>
+          <span>指智商 (IQ) 低於 70 的人士，在溝通與生理自理上需要大量支持。</span>
+        </button>
+        <button class="option" onclick="selectOpt(4,'D')" id="q4-opt-D">
+          <span class="label label-D">D</span>
+          <span>這是一種專指「亞氏保加/亞斯伯格」且具有明顯語言發展遲緩的狀況。</span>
+        </button>
+      </div>
+      <button class="submit-btn" id="submitBtn-Q4" onclick="submitVote(4)" disabled>請先選擇答案</button>
+    </div>
+
+    <!-- Q4 Success Screen -->
+    <div class="success" id="successScreen-Q4">
+      <div class="success-icon" id="successIcon-Q4"></div>
+      <h2 id="successTitle-Q4"></h2>
+      <p id="successSub-Q4"></p>
+      <div class="answer-badge" id="answerBadge-Q4"></div>
+      <div class="result-box" id="resultBox-Q4"></div>
+      <button class="submit-btn" style="margin-top:28px;" onclick="goToWait(4)">繼續下一題 →</button>
+    </div>
+
+    <!-- Wait Screen 4→5 -->
+    <div class="wait-screen" id="waitScreen-4">
+      <div class="wait-icon">💭</div>
+      <h2>⚠️ 溫馨提示</h2>
+      <p>請先聆聽講者講解第五題的相關內容，<br>準備好後再按下方按鈕作答。</p>
+      <div class="wait-badge">🔔 請留意講者指示</div>
+      <button class="wait-confirm-btn" onclick="goToQ(5)">我明白，進入第五題 ✅</button>
+    </div>
+
+    <!-- Q5 文字輸入（原Q4，生涯規劃） -->
+    <div id="voteForm-Q5" style="display:none;">
+      <div class="badge">💭 問題 5 / 5</div>
+      <h1>你覺得甚麼是<span>「生涯規劃」</span>？</h1>
+
+      <!-- 提示框 -->
+      <div class="q5-hint-box">
+        <div class="q5-hint-icon">💡</div>
+        <div class="q5-hint-text">
+          <strong>提示：</strong>可以輸入多個答案！每輸入一個答案後，請按「<strong>+ 新增答案</strong>」按鈕來新增下一個答案欄位。
+        </div>
+      </div>
+
+      <!-- 輸入框容器 -->
+      <div class="q5-input-container" id="q5InputContainer">
+        <div class="q5-input-row">
+          <input type="text" class="q5-text-input" placeholder="請輸入你的答案..." oninput="updateQ5Btn()">
+        </div>
+      </div>
+
+      <!-- 新增答案按鈕 -->
+      <button class="q5-add-btn" onclick="addQ5Input()">
+        <span class="q5-add-icon">+</span>
+        <span>新增答案</span>
+      </button>
+
+      <button class="submit-btn" id="submitBtn-Q5" onclick="submitQ5()" disabled>請先輸入答案</button>
+    </div>
+
+    <!-- Q5 Success Screen -->
+    <div class="success" id="successScreen-Q5">
+      <div class="success-icon">🌟</div>
+      <h2 style="color:#e879f9;">感謝你的分享！</h2>
+      <p>你的答案已加入文字雲，<br>快看看大家的想法吧！</p>
+      <div class="q5-success-cloud">
+        <div class="q5-submitted-text" id="q5SubmittedText"></div>
+        <div class="q5-submitted-label">你提交的答案 ✅</div>
+      </div>
+      <div style="margin-top:20px; padding:14px 20px; border-radius:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#94a3b8; font-size:14px; line-height:1.7; width:100%; text-align:center;">
+        🎉 所有問題已完成！<br>感謝你的參與 💜
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvQZ9oDSBoJVUZZxF9PBVYKzNC6cwjCBeINTlsznXVLrJisfxRvawKjTMLnnMoxwHu/exec';
+
+    // ✅ 正確答案：Q1=C, Q2=D, Q3=B, Q4=B
+    const CORRECT = { 1: 'C', 2: 'D', 3: 'B', 4: 'B' };
+
+    const badgeColors = {
+      A: 'linear-gradient(135deg, #ec4899, #f43f5e)',
+      B: 'linear-gradient(135deg, #22d3ee, #3b82f6)',
+      C: 'linear-gradient(135deg, #4ade80, #10b981)',
+      D: 'linear-gradient(135deg, #fbbf24, #f97316)'
+    };
+
+    let selected = { 1: null, 2: null, 3: null, 4: null };
+    let q5InputCount = 1;
+
+    // ══════════════════════════════════════
+    // 歡迎頁面函數
+    // ══════════════════════════════════════
+    function startVoting() {
+      document.getElementById('welcomeScreen').style.display = 'none';
+      document.getElementById('voteForm-Q1').style.display = 'block';
+    }
+
+    // ── Q1/Q2/Q3/Q4 選項 ──
+    function selectOpt(q, opt) {
+      if (selected[q]) {
+        document.getElementById('q' + q + '-opt-' + selected[q]).classList.remove('selected-' + selected[q]);
+      }
+      selected[q] = opt;
+      document.getElementById('q' + q + '-opt-' + opt).classList.add('selected-' + opt);
+      const btn = document.getElementById('submitBtn-Q' + q);
+      btn.disabled = false;
+      btn.textContent = '✅ 提交答案 ' + opt;
+    }
+
+    async function submitVote(q) {
+      if (!selected[q]) return;
+      const btn = document.getElementById('submitBtn-Q' + q);
+      btn.disabled = true;
+      btn.textContent = '提交中...';
+
+      // ✅ Q4 使用 q=4，寫入 vote415
+      const url = SCRIPT_URL + '?vote=' + selected[q] + '&q=' + q;
+      console.log('Q' + q + ' 提交網址:', url);
+      
+      try {
+        await fetch(url, { mode: 'no-cors' });
+        console.log('✅ Q' + q + ' 請求已發送');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        showSuccess(q);
+      } catch (error) {
+        console.error('❌ Q' + q + ' 請求失敗:', error);
+        showSuccess(q);
+      }
+    }
+
+    function showSuccess(q) {
+      document.getElementById('voteForm-Q' + q).style.display = 'none';
+      const s = document.getElementById('successScreen-Q' + q);
+      s.style.display = 'flex';
+
+      const ans = selected[q];
+      const isCorrect = ans === CORRECT[q];
+
+      document.getElementById('successIcon-Q' + q).textContent = isCorrect ? '🎉' : '📝';
+
+      const title = document.getElementById('successTitle-Q' + q);
+      title.textContent = isCorrect ? '答對了！' : '投票成功！';
+      title.style.color = isCorrect ? '#4ade80' : '#f87171';
+
+      document.getElementById('successSub-Q' + q).textContent = isCorrect
+        ? '太棒了！你選到了正確答案 🌟'
+        : '感謝你的參與，看看正確答案吧！';
+
+      const badge = document.getElementById('answerBadge-Q' + q);
+      badge.textContent = '你選擇了 ' + ans;
+      badge.style.background = badgeColors[ans];
+
+      const box = document.getElementById('resultBox-Q' + q);
+      
+      if (q === 1) {
+        if (isCorrect) {
+          box.className = 'result-box correct';
+          box.innerHTML = '<strong>✅ 正確答案解析</strong>神經多樣性觀點認為，ASD 並非「缺陷」，而是人類大腦運作方式的自然變異，就像 Mac 與 Windows 各有其運作邏輯，沒有優劣之分。';
+        } else {
+          box.className = 'result-box wrong';
+          box.innerHTML = '<strong>💡 正確答案是 C</strong>人類基因與大腦運作的多樣化展現，如同不同系統的電腦（如 Mac vs Windows）。';
+        }
+      } else if (q === 2) {
+        if (isCorrect) {
+          box.className = 'result-box correct';
+          box.innerHTML = '<strong>✅ 正確答案解析</strong>研究顯示，約 50-70% 的 ASD 人士同時患有 ADHD，這是最常見的神經發展共病。兩者都涉及執行功能、注意力調節等大腦運作方式，經常一起出現。';
+        } else {
+          box.className = 'result-box wrong';
+          box.innerHTML = '<strong>💡 正確答案是 D</strong>ADHD（專注力不足/過度活躍症）是成年 ASD 人士最常見的共病狀況。';
+        }
+      } else if (q === 3) {
+        if (isCorrect) {
+          box.className = 'result-box correct';
+          box.innerHTML = '<strong>✅ 正確答案解析</strong>ASD 是先天性的神經發展差異，症狀從幼兒期便已存在。晚期診斷通常是因為症狀被環境、家庭或個人的補償策略所掩蓋，而非成年後才「患上」。';
+        } else {
+          box.className = 'result-box wrong';
+          box.innerHTML = '<strong>💡 正確答案是 B</strong>症狀從幼兒期就存在，只是當時未被識別或被環境掩蓋。';
+        }
+      } else if (q === 4) {
+        if (isCorrect) {
+          box.className = 'result-box correct';
+          box.innerHTML = '<strong>✅ 正確答案解析</strong>「高功能自閉」在臨床上通常指智商 (IQ) ≥ 70 的 ASD 人士，即智力在平均或臨界或以上。但這不代表他們不需要支持，許多高功能 ASD 人士在社交、情緒調節等方面仍需要協助。';
+        } else {
+          box.className = 'result-box wrong';
+          box.innerHTML = '<strong>💡 正確答案是 B</strong>臨床定義為智商 (IQ) ≥ 70，即智力在平均或臨界或以上的 ASD 人士。';
+        }
+      }
+    }
+
+    function goToWait(fromQ) {
+      document.getElementById('successScreen-Q' + fromQ).style.display = 'none';
+      document.getElementById('waitScreen-' + fromQ).style.display = 'flex';
+    }
+
+    function goToQ(q) {
+      document.getElementById('waitScreen-' + (q - 1)).style.display = 'none';
+      document.getElementById('voteForm-Q' + q).style.display = 'block';
+    }
+
+    // ── Q5 新增輸入框 ──
+    function addQ5Input() {
+      const container = document.getElementById('q5InputContainer');
+      const newRow = document.createElement('div');
+      newRow.className = 'q5-input-row';
+      newRow.innerHTML = `
+        <input type="text" class="q5-text-input" placeholder="請輸入你的答案..." oninput="updateQ5Btn()">
+        <button class="q5-remove-btn" onclick="removeQ5Input(this)">×</button>
+      `;
+      container.appendChild(newRow);
+      q5InputCount++;
+      
+      // 自動聚焦到新輸入框
+      newRow.querySelector('.q5-text-input').focus();
+      updateQ5Btn();
+    }
+
+    // ── Q5 移除輸入框 ──
+    function removeQ5Input(btn) {
+      const row = btn.parentElement;
+      row.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => {
+        row.remove();
+        q5InputCount--;
+        updateQ5Btn();
+      }, 300);
+    }
+
+    // ── Q5 更新按鈕狀態 ──
+    function updateQ5Btn() {
+      const inputs = document.querySelectorAll('#q5InputContainer .q5-text-input');
+      let hasValue = false;
+      let count = 0;
+      
+      inputs.forEach(input => {
+        if (input.value.trim()) {
+          hasValue = true;
+          count++;
+        }
+      });
+      
+      const btn = document.getElementById('submitBtn-Q5');
+      btn.disabled = !hasValue;
+      
+      if (count > 0) {
+        btn.textContent = '✅ 提交 ' + count + ' 個答案';
+      } else {
+        btn.textContent = '請先輸入答案';
+      }
+    }
+
+    // ── Q5 提交（收集所有輸入框） ──
+    async function submitQ5() {
+      const inputs = document.querySelectorAll('#q5InputContainer .q5-text-input');
+      const answers = [];
+      
+      inputs.forEach(input => {
+        const val = input.value.trim();
+        if (val) answers.push(val);
+      });
+      
+      if (answers.length === 0) {
+        alert('請至少輸入一個答案');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn-Q5');
+      btn.disabled = true;
+      btn.textContent = '提交中...';
+
+      // ✅ 逐一提交每個答案到 Apps Script (使用 q=5，寫入 vote413)
+      for (let i = 0; i < answers.length; i++) {
+        const url = SCRIPT_URL + '?q=5&text=' + encodeURIComponent(answers[i]);
+        console.log('Q5 提交答案 ' + (i + 1) + ':', answers[i]);
+        console.log('Q5 提交網址:', url);
+        
+        try {
+          await fetch(url, { mode: 'no-cors' });
+          console.log('✅ Q5 答案 ' + (i + 1) + ' 請求已發送');
+          await new Promise(resolve => setTimeout(resolve, 500)); // 每個答案間隔 0.5 秒
+        } catch (error) {
+          console.error('❌ Q5 答案 ' + (i + 1) + ' 請求失敗:', error);
+        }
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      showQ5Success(answers);
+    }
+
+    function showQ5Success(answers) {
+      document.getElementById('voteForm-Q5').style.display = 'none';
+      document.getElementById('successScreen-Q5').style.display = 'flex';
+      
+      // 顯示所有答案，用「、」分隔
+      const displayText = answers.join('、');
+      document.getElementById('q5SubmittedText').textContent = displayText;
+    }
+  </script>
+</body>
+</html>
